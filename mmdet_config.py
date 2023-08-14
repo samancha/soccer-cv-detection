@@ -1,5 +1,8 @@
 _base_ = ['../_base_/default_runtime.py', '../_base_/det_p5_tta.py']
-data_root = '../../Football-And-Players-Detection-5/'
+
+# ========================Frequently modified parameters======================
+# -----data related-----
+data_root = '{dataset.location}/'
 
 train_ann_file = 'train/_annotations.coco.json'
 train_data_prefix = 'train/'
@@ -7,38 +10,21 @@ train_data_prefix = 'train/'
 val_ann_file = 'valid/_annotations.coco.json'
 val_data_prefix = 'valid/'
 
-class_name = ('Ball', 'Goalkeeper', 'player', 'Referee', 'referee','soccer', 
-'team A', 'team B','team1', 'team2')
+class_name = {tuple(sorted(project.classes.keys()))}
+num_classes = {len(project.classes)}
 
-num_classes = 10
+metainfo = dict(classes=class_name, palette=[(20, 220, 60)])
 
 train_batch_size_per_gpu = 8
-base_lr = 0.004
-max_epochs = 10
-img_scale = (640, 640)
-
-# ========================Frequently modified parameters======================
-# -----data related-----
-# data_root = 'data/coco/'
-# Path of train annotation file
-# train_ann_file = 'annotations/instances_train2017.json'
-# train_data_prefix = 'train2017/'  # Prefix of train image path
-# Path of val annotation file
-# val_ann_file = 'annotations/instances_val2017.json'
-# val_data_prefix = 'val2017/'  # Prefix of val image path
-
-# num_classes = 80  # Number of classes for classification
-# Batch size of a single GPU during training
-# train_batch_size_per_gpu = 32
 # Worker to pre-fetch data for each single GPU during training
-train_num_workers = 10
+train_num_workers = 4
 # persistent_workers must be False if num_workers is 0.
 persistent_workers = True
 
 # -----train val related-----
 # Base learning rate for optim_wrapper. Corresponding to 8xb16=64 bs
-# base_lr = 0.004
-# max_epochs = 300  # Maximum training epochs
+base_lr = 0.004
+max_epochs = 15  # Maximum training epochs
 # Change train_pipeline for final 20 epochs (stage 2)
 num_epochs_stage2 = 20
 
@@ -104,6 +90,11 @@ max_keep_ckpts = 3
 env_cfg = dict(cudnn_benchmark=True)
 
 # ===============================Unmodified in most cases====================
+# https://mmengine.readthedocs.io/en/latest/api/visualization.html
+_base_.visualizer.vis_backends = [
+    dict(type='LocalVisBackend'), #
+    dict(type='TensorboardVisBackend'),]
+
 model = dict(
     type='YOLODetector',
     data_preprocessor=dict(
@@ -232,6 +223,7 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
+        metainfo=metainfo,
         ann_file=train_ann_file,
         data_prefix=dict(img=train_data_prefix),
         filter_cfg=dict(filter_empty_gt=True, min_size=32),
@@ -247,6 +239,7 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
+        metainfo=metainfo,
         ann_file=val_ann_file,
         data_prefix=dict(img=val_data_prefix),
         test_mode=True,
