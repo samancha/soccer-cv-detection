@@ -1,5 +1,7 @@
 _base_ = ['../_base_/default_runtime.py', '../_base_/det_p5_tta.py']
 
+BATCH_SIZE = 8
+MAX_EPOCHS = 50
 # ========================Frequently modified parameters======================
 # -----data related-----
 data_root = '{dataset.location}/'
@@ -15,7 +17,7 @@ num_classes = {len(project.classes)}
 
 metainfo = dict(classes=class_name, palette=[(20, 220, 60)])
 
-train_batch_size_per_gpu = 8
+train_batch_size_per_gpu = {BATCH_SIZE}  # Batch size of a single GPU during training
 # Worker to pre-fetch data for each single GPU during training
 train_num_workers = 4
 # persistent_workers must be False if num_workers is 0.
@@ -24,7 +26,7 @@ persistent_workers = True
 # -----train val related-----
 # Base learning rate for optim_wrapper. Corresponding to 8xb16=64 bs
 base_lr = 0.004
-max_epochs = 15  # Maximum training epochs
+max_epochs = {MAX_EPOCHS}  # Maximum training epochs
 # Change train_pipeline for final 20 epochs (stage 2)
 num_epochs_stage2 = 20
 
